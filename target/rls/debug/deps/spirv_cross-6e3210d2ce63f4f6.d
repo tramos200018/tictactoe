@@ -1,0 +1,11 @@
+/Users/antonioramos/CS181/tictactoe/target/rls/debug/deps/spirv_cross-6e3210d2ce63f4f6.rmeta: /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/lib.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/compiler.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/hlsl.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/msl.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/spirv.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/ptr_util.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/bindings_native.rs
+
+/Users/antonioramos/CS181/tictactoe/target/rls/debug/deps/spirv_cross-6e3210d2ce63f4f6.d: /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/lib.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/compiler.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/hlsl.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/msl.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/spirv.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/ptr_util.rs /Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/bindings_native.rs
+
+/Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/lib.rs:
+/Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/compiler.rs:
+/Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/hlsl.rs:
+/Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/msl.rs:
+/Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/spirv.rs:
+/Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/ptr_util.rs:
+/Users/antonioramos/.cargo/registry/src/github.com-1ecc6299db9ec823/spirv_cross-0.22.2/src/bindings_native.rs:
