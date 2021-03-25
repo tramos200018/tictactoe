@@ -46,7 +46,6 @@ const PLAYER_COL: Color = [255, 128, 128, 255];
 const NEXT_COL: Color = [255, 0, 0, 255];
 const ARROW_COL: Color = [0, 255, 0, 255];
 
-
 struct Level {
     gamemap: Vec<Wall>,
     exit: collision::Rect,
@@ -73,6 +72,13 @@ const DT: f64 = 1.0 / 60.0;
 const WIDTH: usize = 700;
 const HEIGHT: usize = 550;
 const DEPTH: usize = 4;
+
+const GRID_X: usize = 195;
+const GRID_Y: usize = 150;
+const GRID_LENGTH: usize = 250;
+
+
+
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum Mode {
@@ -159,188 +165,13 @@ fn main() {
             },
         },
     ];
-    let walls2: Vec<Wall> = vec![
-        //top wall
-        Wall {
-            rect: collision::Rect {
-                x: 0,
-                y: 0,
-                w: WIDTH as u16,
-                h: 0,
-            },
-        },
-        //left wall
-        Wall {
-            rect: collision::Rect {
-                x: 0,
-                y: 0,
-                w: 90,
-                h: HEIGHT as u16,
-            },
-        },
-        //right wall
-        Wall {
-            rect: collision::Rect {
-                x: WIDTH as i32 - 26,
-                y: 0,
-                w: 90,
-                h: HEIGHT as u16,
-            },
-        },
-        //bottom wall
-        Wall {
-            rect: collision::Rect {
-                x: 0,
-                y: HEIGHT as i32 - 30,
-                w: WIDTH as u16,
-                h: 70,
-            },
-        },
-        //first quarter wall
-        Wall {
-            rect: collision::Rect {
-                x: 220,
-                y: 90,
-                w: WIDTH as u16,
-                h: 70,
-            },
-        },
-        //second quarter wall
-        Wall {
-            rect: collision::Rect {
-                x: 0,
-                y: 240,
-                w: WIDTH as u16 - 90,
-                h: 70,
-            },
-        },
-        //third quarter wall
-        Wall {
-            rect: collision::Rect {
-                x: 220,
-                y: 390,
-                w: WIDTH as u16,
-                h: 70,
-            },
-        },
-    ];
-    let walls3: Vec<Wall> = vec![
-        //bottom wall
-        Wall {
-            rect: collision::Rect {
-                x: 0,
-                y: HEIGHT as i32 - 50,
-                w: WIDTH as u16,
-                h: 50,
-            },
-        },
-        //right wall
-        Wall {
-            rect: collision::Rect {
-                x: WIDTH as i32 - 150,
-                y: 0,
-                w: 150,
-                h: HEIGHT as u16,
-            },
-        },
-        //left wall
-        Wall {
-            rect: collision::Rect {
-                x: 0,
-                y: 0,
-                w: 100,
-                h: HEIGHT as u16,
-            },
-        },
-        //top wall
-        Wall {
-            rect: collision::Rect {
-                x: 0,
-                y: 0,
-                w: WIDTH as u16,
-                h: 50,
-            },
-        },
-        //w1
-        Wall {
-            rect: collision::Rect {
-                x: 100,
-                y: HEIGHT as i32 - 150,
-                w: WIDTH as u16 / 3 + 150,
-                h: 50,
-            },
-        },
-        //w2
-        Wall {
-            rect: collision::Rect {
-                x: 100 + 50,
-                y: HEIGHT as i32 - 350,
-                w: WIDTH as u16 / 3 + 200,
-                h: 150,
-            },
-        },
-        //w3
-        Wall {
-            rect: collision::Rect {
-                x: 100,
-                y: 50,
-                w: WIDTH as u16 / 3,
-                h: 100,
-            },
-        },
-        //w4
-        Wall {
-            rect: collision::Rect {
-                x: 100 + WIDTH as i32 / 3,
-                y: HEIGHT as i32 - 375,
-                w: WIDTH as u16 / 3 + 100,
-                h: 25,
-            },
-        },
-        //w5
-        Wall {
-            rect: collision::Rect {
-                x: WIDTH as i32 / 3 * 2 - 50,
-                y: 50,
-                w: WIDTH as u16 / 3 + 50,
-                h: 150,
-            },
-        },
-        //w6
-        Wall {
-            rect: collision::Rect {
-                x: 100 + WIDTH as i32 / 3,
-                y: 125,
-                w: 50,
-                h: 25,
-            },
-        },
-        //w7
-        Wall {
-            rect: collision::Rect {
-                x: 130 + WIDTH as i32 / 3,
-                y: 93,
-                w: 60,
-                h: 3,
-            },
-        },
-        //w8
-        Wall {
-            rect: collision::Rect {
-                x: 100 + WIDTH as i32 / 3,
-                y: 50,
-                w: 40,
-                h: 15,
-            },
-        },
-    ];
 
     let event_loop = EventLoop::new();
     let mut input = WinitInputHelper::new();
     let window = {
         let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
         WindowBuilder::new()
-            .with_title("Anim2D")
+            .with_title("TicTactoe")
             .with_inner_size(size)
             .with_min_inner_size(size)
             .with_resizable(false)
@@ -363,27 +194,7 @@ fn main() {
         },
         position: Vec2i(170, 500),
     };
-    let level2 = Level {
-        gamemap: walls2,
-        exit: collision::Rect {
-            x: WIDTH as i32 - 50,
-            y: 460,
-            w: 30,
-            h: 60,
-        },
-        position: Vec2i(WIDTH as i32 - 55, 15),
-    };
-    let level3 = Level {
-        gamemap: walls3,
-        //need to correct exit
-        exit: collision::Rect {
-            x: 373,
-            y: 50,
-            w: 43,
-            h: 10,
-        },
-        position: Vec2i(110, 463),
-    };
+
     let level4 = Level {
         gamemap: walls4,
         //need to correct exit
@@ -408,7 +219,7 @@ fn main() {
             vx: 0,
             vy: 0,
         },
-        levels: vec![level, level2, level3, level4],
+        levels: vec![level, level4],
         current_level: 0,
         mode: Mode::TitleScreen,
         animations: vec![],
@@ -444,33 +255,15 @@ fn main() {
                     )
                 }
                 Mode::GamePlay => {
-                    //Draw the walls
-                    for w in state.levels[state.current_level].gamemap.iter() {
-                        collision::rect(fb, w.rect, WALL_COL);
-                    }
-                    //draw the exit
-                    collision::rect(fb, state.levels[state.current_level].exit, NEXT_COL);
-                    // Draw the player
-                    collision::frameRect(fb, state.player.rect, PLAYER_COL);
-                    if (state.current_level != 2) {
-                        // Draw the triangle
-                        collision::triangle(
-                            fb,
-                            (
-                                state.levels[state.current_level].exit.x as usize,
-                                state.levels[state.current_level].exit.y as usize,
-                            ),
-                            state.levels[state.current_level].exit.w as usize,
-                            state.levels[state.current_level].exit.h as usize,
-                            CLEAR_COL,
-                        );
-                    }
+                    //Draw the grid
+                    collision::gameLayout(fb, GRID_X, GRID_Y, GRID_LENGTH, WALL_COL);
+
+                    //Draw a cross
+                    collision::cross(fb, 300, 350, 50, WALL_COL);
+
+
 
                     let mut screen = Screen::wrap(fb, WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
-
-                    for s in state.sprites.iter() {
-                        screen.draw_sprite(s);
-                    }
                 }
                 Mode::EndGame => {
                     Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0)).bitblt(
@@ -536,50 +329,10 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         }
         Mode::GamePlay => {
             // Player control goes here
-            if input.key_held(VirtualKeyCode::Right) {
-                state.player.rect.x += 1;
-                state.sprites[0].position.0 += 1;
-            }
-            if input.key_held(VirtualKeyCode::Left) {
-                state.player.rect.x -= 1;
-                state.sprites[0].position.0 -= 1;
-            }
-            if input.key_held(VirtualKeyCode::Up) {
-                state.player.rect.y -= 1;
-                state.sprites[0].position.1 -= 1;
-            }
-            if input.key_held(VirtualKeyCode::Down) {
-                state.player.rect.y += 1;
-                state.sprites[0].position.1 += 1;
-            }
-            // Update player position
 
-            // Detect collisions: Generate contacts
-            for w in state.levels[state.current_level].gamemap.iter() {
-                if collision::rect_touching(state.player.rect, w.rect) {
-                    //level_index = 0;
-                    state.current_level = level_index;
-                    state.player.rect.x = state.levels[state.current_level].position.0;
-                    state.player.rect.y = state.levels[state.current_level].position.1;
-                    state.sprites[0].position.0 = state.player.rect.x;
-                    state.sprites[0].position.1 = state.player.rect.y;
-                    break;
-                }
+            if (level_index == 1) {
+                state.mode = Mode::EndGame;
             }
-
-            if collision::rect_touching(state.player.rect, state.levels[state.current_level].exit) {
-                //change level here
-                level_index += 1;
-                state.current_level = level_index;
-                state.player.rect.x = state.levels[state.current_level].position.0;
-                state.player.rect.y = state.levels[state.current_level].position.1;
-                state.sprites[0].position.0 = state.player.rect.x;
-                state.sprites[0].position.1 = state.player.rect.y;
-                if (level_index == 3) {
-                    state.mode = Mode::EndGame;
-                }
-            }
-            state.sprites[0].update_anim();
         }
 
         Mode::EndGame => {

@@ -72,6 +72,17 @@ pub fn rect_touching(r1: Rect, r2: Rect) -> bool {
         r1.y <= r2.y+r2.h as i32 &&
         r2.y <= r1.y+r1.h as i32
 }
+pub fn gameLayout(fb: &mut [u8], x: usize, y: usize, l: usize, c: Color) {
+    line(fb, (x + l / 3, y), (x + l / 3, y + l), c);
+    line(fb, (x + l / 3 * 2, y), (x + l / 3 * 2, y + l), c);
+    line(fb, (x, y + l / 3), (x + l, y + l / 3), c);
+    line(fb, (x, y + l / 3 * 2), (x + l, y + l / 3 * 2), c);
+}
+pub fn cross(fb: &mut [u8], x: usize, y: usize, l: usize, c: Color) {
+    line(fb, (x, y), (x + l, y + l), c);
+    line(fb, (x + l, y), (x, y + l), c);
+    
+}
 fn hline(fb: &mut [u8], x0: usize, x1: usize, y: usize, c: Color) {
     assert!(y < HEIGHT);
     assert!(x0 <= x1);
