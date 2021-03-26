@@ -226,6 +226,8 @@ fn main() {
         sprites: vec![Sprite::new(&tex, &anim, frame1, 0, Vec2i(170, 500))],
         textures: vec![tex],
     };
+
+
     // How many frames have we simulated?
     let mut frame_count: usize = 0;
     // How many unsimulated frames have we saved up?
@@ -260,6 +262,7 @@ fn main() {
 
                     //Draw a cross
                     collision::cross(fb, 300, 350, 50, WALL_COL);
+                    collision::draw(fb);
 
 
 
