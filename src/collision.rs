@@ -95,6 +95,7 @@ pub fn draw(frame: &mut [u8]) {
         //formula for all the points from a circle
         //300 are the circles x and y location, so maybe that should be a variable
         //https://github.com/parasyte/pixels/blob/master/examples/minimal-fltk/src/main.rs
+        //https://math.stackexchange.com/questions/198764/how-to-know-if-a-point-is-inside-a-circle
         let d = {
             let xd = x as i32 - 300 as i32;
             let yd = y as i32 - 210 as i32;
