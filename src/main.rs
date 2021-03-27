@@ -236,12 +236,14 @@ fn main() {
     let start = Instant::now();
     // Track end of the last frame
     let mut since = Instant::now();
+    let mut circle_x = -5.0;
+    let mut circle_y = -5.0;
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {
-            let fb = pixels.get_frame();
+            //let fb = pixels.get_frame();
 
-            collision::clear(fb, CLEAR_COL);
+            collision::clear(pixels.get_frame(), CLEAR_COL);
 
             match state.mode {
                 Mode::TitleScreen => {
@@ -258,15 +260,32 @@ fn main() {
                 }
                 Mode::GamePlay => {
                     //Draw the grid
-                    collision::gameLayout(fb, GRID_X, GRID_Y, GRID_LENGTH, WALL_COL);
+                    collision::gameLayout(pixels.get_frame(), GRID_X, GRID_Y, GRID_LENGTH, WALL_COL);
 
                     //Draw a cross
-                    collision::cross(fb, 300, 350, 50, WALL_COL);
-                    collision::draw(fb);
+                    collision::cross(pixels.get_frame(), 300, 350, 50, WALL_COL);
+
+                    if input.mouse_released(0) == true{
+                        if let Some((x, y)) = input.mouse().and_then(|mp| pixels.window_pos_to_pixel(mp).ok())
+                        {
+                            circle_x = x as f32;
+                            circle_y = y as f32;
+
+                        }
+
+                    }
+                    if circle_x > 0.0 && circle_y > 0.0{
+                        collision::draw(pixels.get_frame(), circle_x, circle_y);
+                        window.request_redraw();
+
+                    }
 
 
 
-                    let mut screen = Screen::wrap(fb, WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
+
+
+
+                    let mut screen = Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
                 }
                 Mode::EndGame => {
                     Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0)).bitblt(

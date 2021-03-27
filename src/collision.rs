@@ -85,7 +85,7 @@ pub fn cross(fb: &mut [u8], x: usize, y: usize, l: usize, c: Color) {
     line(fb, (x + l, y), (x, y + l), c);
     
 }
-pub fn draw(frame: &mut [u8]) {
+pub fn draw(frame: &mut [u8], circle_x: f32, circle_y: f32) {
 
     for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
 
@@ -97,8 +97,8 @@ pub fn draw(frame: &mut [u8]) {
         //https://github.com/parasyte/pixels/blob/master/examples/minimal-fltk/src/main.rs
         //https://math.stackexchange.com/questions/198764/how-to-know-if-a-point-is-inside-a-circle
         let d = {
-            let xd = x as i32 - 300 as i32;
-            let yd = y as i32 - 210 as i32;
+            let xd = x as i32 - circle_x as i32;
+            let yd = y as i32 - circle_y as i32;
             ((xd.pow(2) + yd.pow(2)) as f64).sqrt().powi(2)
         };
         let inside_of_circle = d < (CIRCLE_RADIUS as f64).powi(2);
