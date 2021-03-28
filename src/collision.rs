@@ -75,10 +75,24 @@ pub fn rect_touching(r1: Rect, r2: Rect) -> bool {
         r2.y <= r1.y+r1.h as i32
 }
 pub fn gameLayout(fb: &mut [u8], x: usize, y: usize, l: usize, c: Color) {
+    //x screen width and y screen heigth
+    //horizontal
+    line(fb, (0, y/3), (x, y/3), c);
+    line(fb, (0, 2*y/3), (x, 2*y/3), c);
+    //vertical
+    line(fb, (x/3, 0), (x/3, y), c);
+    line(fb, (2* (x/3) , 0), (2* (x/3), y), c);
+
+
+
+/* 
+    //original version
+    //vertical lines
     line(fb, (x + l / 3, y), (x + l / 3, y + l), c);
     line(fb, (x + l / 3 * 2, y), (x + l / 3 * 2, y + l), c);
+    //horizontal lines
     line(fb, (x, y + l / 3), (x + l, y + l / 3), c);
-    line(fb, (x, y + l / 3 * 2), (x + l, y + l / 3 * 2), c);
+    line(fb, (x, y + l / 3 * 2), (x + l, y + l / 3 * 2), c);*/
 }
 pub fn cross(fb: &mut [u8], x: usize, y: usize, l: usize, c: Color) {
     line(fb, (x, y), (x + l, y + l), c);
@@ -120,7 +134,7 @@ fn hline(fb: &mut [u8], x0: usize, x1: usize, y: usize, c: Color) {
     }
 }
 
-fn line(fb: &mut [u8], (x0, y0): (usize, usize), (x1, y1): (usize, usize), col: Color) {
+pub fn line(fb: &mut [u8], (x0, y0): (usize, usize), (x1, y1): (usize, usize), col: Color) {
     let mut x = x0 as i64;
     let mut y = y0 as i64;
     let x0 = x0 as i64;

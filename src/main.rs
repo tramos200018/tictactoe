@@ -3,7 +3,7 @@ use pixels::{Pixels, SurfaceTexture};
 use std::rc::Rc;
 use std::time::Instant;
 use std::{borrow::Borrow, os::macos::raw::stat, path::Path, task::RawWakerVTable};
-use winit::event::{Event, VirtualKeyCode};
+use winit::{event::{Event, VirtualKeyCode}, window::Window};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 use winit::{dpi::LogicalSize, event};
@@ -46,6 +46,10 @@ const PLAYER_COL: Color = [255, 128, 128, 255];
 const NEXT_COL: Color = [255, 0, 0, 255];
 const ARROW_COL: Color = [0, 255, 0, 255];
 
+const EMPTY: usize = 0;
+const CIRCLE: usize = 1;
+const CROSS: usize = 2;
+
 struct Level {
     gamemap: Vec<Wall>,
     exit: collision::Rect,
@@ -65,6 +69,7 @@ struct GameState {
     levels: Vec<Level>,
     current_level: usize,
     mode: Mode,
+    model: Vec<Vec<usize>>
 }
 // seconds per frame
 const DT: f64 = 1.0 / 60.0;
@@ -225,6 +230,11 @@ fn main() {
         animations: vec![],
         sprites: vec![Sprite::new(&tex, &anim, frame1, 0, Vec2i(170, 500))],
         textures: vec![tex],
+        model: vec![
+            vec![EMPTY, EMPTY, EMPTY], 
+            vec![EMPTY, EMPTY, EMPTY], 
+            vec![EMPTY, EMPTY, EMPTY]
+        ]
     };
 
 
@@ -236,8 +246,14 @@ fn main() {
     let start = Instant::now();
     // Track end of the last frame
     let mut since = Instant::now();
-    let mut circle_x = -5.0;
-    let mut circle_y = -5.0;
+    /*let mut model: Vec<Vec<usize>> = vec![
+                        vec![EMPTY, EMPTY, EMPTY], 
+                        vec![EMPTY, EMPTY, EMPTY], 
+                        vec![EMPTY, EMPTY, EMPTY]
+                    ];*/
+  
+
+
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {
@@ -260,25 +276,32 @@ fn main() {
                 }
                 Mode::GamePlay => {
                     //Draw the grid
-                    collision::gameLayout(pixels.get_frame(), GRID_X, GRID_Y, GRID_LENGTH, WALL_COL);
+                    //collision::gameLayout(pixels.get_frame(), GRID_X, GRID_Y, GRID_LENGTH, WALL_COL);
+                    collision::gameLayout(pixels.get_frame(), WIDTH, HEIGHT, GRID_LENGTH, WALL_COL);
 
+                    //collision::line(pixels.get_frame(), (GRID_X  + (GRID_LENGTH/3) , 0), (GRID_X  + (GRID_LENGTH/3) , 300), WALL_COL   );
                     //Draw a cross
-                    collision::cross(pixels.get_frame(), 300, 350, 50, WALL_COL);
+                    //collision::cross(pixels.get_frame(), 300, 350, 50, WALL_COL);
 
-                    if input.mouse_released(0) == true{
-                        if let Some((x, y)) = input.mouse().and_then(|mp| pixels.window_pos_to_pixel(mp).ok())
-                        {
-                            circle_x = x as f32;
-                            circle_y = y as f32;
+                    //TODO: for loop that goes through model and draws all the circles and crosses
+                    for i in 0..3{
+                        for j in 0..3{
+                            if state.model[i][j] == CIRCLE{
+                                let center_x = (i * WIDTH/3 + WIDTH/6) as f32;
+                                let center_y = (j * HEIGHT/3 + HEIGHT/6) as f32;
 
+                                collision::draw(pixels.get_frame(), center_x, center_y);
+                            }
                         }
-
                     }
+ 
+                    window.request_redraw();
+                    /* 
                     if circle_x > 0.0 && circle_y > 0.0{
                         collision::draw(pixels.get_frame(), circle_x, circle_y);
                         window.request_redraw();
 
-                    }
+                    }*/
 
 
 
@@ -323,17 +346,19 @@ fn main() {
                 pixels.resize(size.width, size.height);
             }
         }
+        
         // And the simulation "consumes" it
         while available_time >= DT {
             let mut screen = Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
             // Eat up one frame worth of time
             available_time -= DT;
 
-            update_game(&mut state, &input, frame_count);
+            update_game(&mut state, &input, frame_count, &pixels);
 
             // Increment the frame counter
             frame_count += 1;
         }
+
         // Request redraw
         window.request_redraw();
         // When did the last frame end?
@@ -341,8 +366,10 @@ fn main() {
     });
 }
 
-fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
+fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pixels: &Pixels<Window>) {
     let mut level_index: usize = state.current_level;
+    let mut circle_x = 0.0;
+    let mut circle_y = 0.0;
     match state.mode {
         Mode::TitleScreen => {
             if input.key_held(VirtualKeyCode::Return) {
@@ -351,6 +378,20 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize) {
         }
         Mode::GamePlay => {
             // Player control goes here
+            if input.mouse_released(0) == true{
+                if let Some((mouse_x, mouse_y)) = input.mouse().and_then(|mp| pixels.window_pos_to_pixel(mp).ok())
+                {
+                    circle_x = (mouse_x / (WIDTH/3)) as f32;
+                    //println!("{}", circle_x);
+                    circle_y = (mouse_y/ (HEIGHT/3)) as f32;
+                    //println!("{}", circle_y);
+                    state.model[circle_x as usize][circle_y as usize] = CIRCLE;
+
+                }
+
+            }
+
+
 
             if (level_index == 1) {
                 state.mode = Mode::EndGame;
