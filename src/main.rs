@@ -60,7 +60,7 @@ struct Level {
 struct GameState {
     // What data do we need for this game?  Wall positions?
     // Colliders?  Sprites and stuff?
-    player: Mobile,
+    player: usize,
     animations: Vec<Animation>,
     textures: Vec<Rc<Texture>>,
     sprites: Vec<Sprite>,
@@ -81,6 +81,8 @@ const DEPTH: usize = 4;
 const GRID_X: usize = 195;
 const GRID_Y: usize = 150;
 const GRID_LENGTH: usize = 250;
+
+const CROSS_SIZE: usize= 75;
 
 
 
@@ -214,16 +216,7 @@ fn main() {
 
     let mut state = GameState {
         // initial game state...
-        player: Mobile {
-            rect: collision::Rect {
-                x: 170,
-                y: 500,
-                w: 11,
-                h: 11,
-            },
-            vx: 0,
-            vy: 0,
-        },
+        player: CIRCLE,
         levels: vec![level, level4],
         current_level: 0,
         mode: Mode::TitleScreen,
@@ -290,10 +283,18 @@ fn main() {
                                 let center_x = (i * WIDTH/3 + WIDTH/6) as f32;
                                 let center_y = (j * HEIGHT/3 + HEIGHT/6) as f32;
 
-                                collision::draw(pixels.get_frame(), center_x, center_y);
+                                collision::circle(pixels.get_frame(), center_x, center_y);
+                            }
+                            else if state.model[i][j] == CROSS{
+                                let cross_x = (i * WIDTH/3 + 75);
+                                let cross_y = (j * HEIGHT/3 + 50);
+
+                                collision::cross(pixels.get_frame(), cross_x , cross_y , CROSS_SIZE, WALL_COL);
+
                             }
                         }
                     }
+                    
  
                     window.request_redraw();
                     /* 
@@ -368,8 +369,11 @@ fn main() {
 
 fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pixels: &Pixels<Window>) {
     let mut level_index: usize = state.current_level;
-    let mut circle_x = 0.0;
-    let mut circle_y = 0.0;
+    let mut input_x = 0.0;
+    let mut input_y = 0.0;
+    println!("{}", state.player);
+    
+
     match state.mode {
         Mode::TitleScreen => {
             if input.key_held(VirtualKeyCode::Return) {
@@ -379,20 +383,28 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pi
         Mode::GamePlay => {
             // Player control goes here
             if input.mouse_released(0) == true{
-                if let Some((mouse_x, mouse_y)) = input.mouse().and_then(|mp| pixels.window_pos_to_pixel(mp).ok())
-                {
-                    circle_x = (mouse_x / (WIDTH/3)) as f32;
-                    //println!("{}", circle_x);
-                    circle_y = (mouse_y/ (HEIGHT/3)) as f32;
-                    //println!("{}", circle_y);
-                    state.model[circle_x as usize][circle_y as usize] = CIRCLE;
+                if let Some((mouse_x, mouse_y)) = input.mouse().and_then(|mp| pixels.window_pos_to_pixel(mp).ok()) {
+                        input_x = (mouse_x / (WIDTH/3)) as f32;
+                        //println!("{}", circle_x);
+                        input_y = (mouse_y/ (HEIGHT/3)) as f32;
+                        //println!("{}", circle_y);
+                        if state.model[input_x as usize][input_y as usize] == EMPTY{
+                            state.model[input_x as usize][input_y as usize] = state.player;
+                            if state.player == CIRCLE{
+                                state.player = CROSS
+                            }
+                            else if state.player == CROSS{
+                                state.player = CIRCLE
+                            }
 
+                        }
                 }
 
             }
+            
 
 
-
+            //Endgame logic
             if (level_index == 1) {
                 state.mode = Mode::EndGame;
             }
@@ -405,6 +417,8 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pi
             }
         }
     }
+
+    
 
     // Handle collisions: Apply restitution impulses.
 
