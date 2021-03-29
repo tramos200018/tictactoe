@@ -15,7 +15,6 @@ const HEIGHT: usize = 550;
 const PITCH: usize = WIDTH * DEPTH;
 const CIRCLE_RADIUS: i16 = 24;
 
-
 // We'll make our Color type an RGBA8888 pixel.
 type Color = [u8; DEPTH];
 
@@ -77,15 +76,13 @@ pub fn rect_touching(r1: Rect, r2: Rect) -> bool {
 pub fn gameLayout(fb: &mut [u8], x: usize, y: usize, l: usize, c: Color) {
     //x screen width and y screen heigth
     //horizontal
-    line(fb, (0, y/3), (x, y/3), c);
-    line(fb, (0, 2*y/3), (x, 2*y/3), c);
+    line(fb, (0, y / 3), (x, y / 3), c);
+    line(fb, (0, 2 * y / 3), (x, 2 * y / 3), c);
     //vertical
-    line(fb, (x/3, 0), (x/3, y), c);
-    line(fb, (2* (x/3) , 0), (2* (x/3), y), c);
+    line(fb, (x / 3, 0), (x / 3, y), c);
+    line(fb, (2 * (x / 3), 0), (2 * (x / 3), y), c);
 
-
-
-/* 
+    /*
     //original version
     //vertical lines
     line(fb, (x + l / 3, y), (x + l / 3, y + l), c);
@@ -97,12 +94,9 @@ pub fn gameLayout(fb: &mut [u8], x: usize, y: usize, l: usize, c: Color) {
 pub fn cross(fb: &mut [u8], x: usize, y: usize, l: usize, c: Color) {
     line(fb, (x, y), (x + l, y + l), c);
     line(fb, (x + l, y), (x, y + l), c);
-    
 }
-pub fn draw(frame: &mut [u8], circle_x: f32, circle_y: f32) {
-
+pub fn circle(frame: &mut [u8], circle_x: f32, circle_y: f32) {
     for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-
         let x = (i % WIDTH as usize) as i16;
         let y = (i / WIDTH as usize) as i16;
 
@@ -118,9 +112,8 @@ pub fn draw(frame: &mut [u8], circle_x: f32, circle_y: f32) {
         let inside_of_circle = d < (CIRCLE_RADIUS as f64).powi(2);
 
         let rgba = [0xac, 0x00, 0xe6, 0xff];
-        if inside_of_circle{
+        if inside_of_circle {
             pixel.copy_from_slice(&rgba);
-
         }
     }
 }
