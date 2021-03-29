@@ -371,7 +371,6 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pi
     let mut level_index: usize = state.current_level;
     let mut input_x = 0.0;
     let mut input_y = 0.0;
-    println!("{}", state.player);
     
 
     match state.mode {
