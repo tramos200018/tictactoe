@@ -57,7 +57,7 @@ struct Level {
 }
 
 // Now this main module is just for the run-loop and rules processing.
-struct GameState {
+pub struct GameState {
     // What data do we need for this game?  Wall positions?
     // Colliders?  Sprites and stuff?
     player: usize,
@@ -312,16 +312,7 @@ fn main() {
                     let mut screen = Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
                 }
                 Mode::EndGame => {
-                    Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0)).bitblt(
-                        &endscreen_tex,
-                        Rect {
-                            x: 0,
-                            y: 0,
-                            w: 700,
-                            h: 550,
-                        },
-                        Vec2i(0, 0),
-                    )
+                    
                 }
             }
 
@@ -402,17 +393,18 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pi
             }
             
 
-
+        
             //Endgame logic
-            if (level_index == 1) {
+            if gameOverCircle(state) || gameOverCross(state) {
                 state.mode = Mode::EndGame;
             }
         }
 
         Mode::EndGame => {
+            println!("Congratulations, you won. To play again, press return");
             if input.key_held(VirtualKeyCode::Return) {
-                state.current_level = 0;
-                state.mode = Mode::GamePlay
+                ResetGame(state);
+                state.mode = Mode::GamePlay;
             }
         }
     }
@@ -422,4 +414,106 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pi
     // Handle collisions: Apply restitution impulses.
 
     // Update game rules: What happens when the player touches things?
+}
+
+pub fn gameOverCircle(state: &mut GameState) -> bool{
+    //circle
+    if (state.model[0][0] == CIRCLE
+        && state.model[0][1] == CIRCLE
+        && state.model[0][2] == CIRCLE
+    ) {
+        return true;
+    } else if (state.model[1][0] == CIRCLE
+        && state.model[1][1] == CIRCLE
+        && state.model[1][2] == CIRCLE
+    ) {
+        return true;
+    } else if (state.model[2][0] == CIRCLE
+        && state.model[2][1] == CIRCLE
+        && state.model[2][2] == CIRCLE
+    ) {
+        return true;
+    } else if (state.model[0][0] == CIRCLE
+        && state.model[1][0] == CIRCLE
+        && state.model[2][0] == CIRCLE
+    ) {
+        return true;
+    } else if (state.model[0][1] == CIRCLE
+        && state.model[1][1] == CIRCLE
+        && state.model[2][1] == CIRCLE
+    ) {
+        return true;
+    } else if (state.model[0][2] == CIRCLE
+        && state.model[1][2] == CIRCLE
+        && state.model[2][2] == CIRCLE
+    ) {
+        return true;
+    } else if (state.model[0][0] == CIRCLE
+        && state.model[1][1] == CIRCLE
+        && state.model[2][2] == CIRCLE
+    ) {
+        return true;
+    } else if (state.model[0][2] == CIRCLE
+        && state.model[1][1] == CIRCLE
+        && state.model[2][0] == CIRCLE
+    ) {
+        return true;
+    }
+    return false;
+
+}
+pub fn gameOverCross(state: &mut GameState) -> bool{
+    //circle
+    if (state.model[0][0] == CROSS
+        && state.model[0][1] == CROSS
+        && state.model[0][2] == CROSS
+    ) {
+        return true;
+    } else if (state.model[1][0] == CROSS
+        && state.model[1][1] == CROSS
+        && state.model[1][2] == CROSS
+    ) {
+        return true;
+    } else if (state.model[2][0] == CROSS
+        && state.model[2][1] == CROSS
+        && state.model[2][2] == CROSS
+    ) {
+        return true;
+    } else if (state.model[0][0] == CROSS
+        && state.model[1][0] == CROSS
+        && state.model[2][0] == CROSS
+    ) {
+        return true;
+    } else if (state.model[0][1] == CROSS
+        && state.model[1][1] == CROSS
+        && state.model[2][1] == CROSS
+    ) {
+        return true;
+    } else if (state.model[0][2] == CROSS
+        && state.model[1][2] == CROSS
+        && state.model[2][2] == CROSS
+    ) {
+        return true;
+    } else if (state.model[0][0] == CROSS
+        && state.model[1][1] == CROSS
+        && state.model[2][2] == CROSS
+    ) {
+        return true;
+    } else if (state.model[0][2] == CROSS
+        && state.model[1][1] == CROSS
+        && state.model[2][0] == CROSS
+    ) {
+        return true;
+    }
+    return false;
+
+}
+
+pub fn ResetGame(state: &mut GameState){
+    for i in 0..3{
+        for j in 0..3{
+            state.model[i][j] = EMPTY;
+        }
+    }
+    state.player = CIRCLE;
 }
