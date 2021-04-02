@@ -100,7 +100,6 @@ enum Mode {
 fn main() {
     let mut rsrc = Resources::new();
     let startscreen_tex = rsrc.load_texture(Path::new("start.png"));
-    let endscreen_tex = rsrc.load_texture(Path::new("end.png"));
     let confetti = rsrc.load_texture(Path::new("confetti2.jpeg"));
     let confetti2 = rsrc.load_texture(Path::new("confetti1.jpeg"));
     
