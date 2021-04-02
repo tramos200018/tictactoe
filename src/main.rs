@@ -1,13 +1,18 @@
 use crate::types::{Rect, Rgba, Vec2i};
 use pixels::{Pixels, SurfaceTexture};
+use rand::seq::SliceRandom;
+use rand::{thread_rng, Rng};
 use std::rc::Rc;
 use std::time::Instant;
 use std::{borrow::Borrow, os::macos::raw::stat, path::Path, task::RawWakerVTable};
-use winit::{event::{Event, VirtualKeyCode}, window::Window};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 use winit::{dpi::LogicalSize, event};
-use winit_input_helper::WinitInputHelper;
+use winit::{
+    event::{Event, VirtualKeyCode},
+    window::Window,
+};
+use winit_input_helper::WinitInputHelper; // 0.7.2
 
 // Whoa what's this?
 // Mod without brackets looks for a nearby file.
@@ -69,7 +74,8 @@ pub struct GameState {
     levels: Vec<Level>,
     current_level: usize,
     mode: Mode,
-    model: Vec<Vec<usize>>
+    model: Vec<Vec<usize>>,
+    mouse_down: bool,
 }
 // seconds per frame
 const DT: f64 = 1.0 / 60.0;
@@ -82,10 +88,7 @@ const GRID_X: usize = 195;
 const GRID_Y: usize = 150;
 const GRID_LENGTH: usize = 250;
 
-const CROSS_SIZE: usize= 75;
-
-
-
+const CROSS_SIZE: usize = 75;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum Mode {
@@ -224,12 +227,12 @@ fn main() {
         sprites: vec![Sprite::new(&tex, &anim, frame1, 0, Vec2i(170, 500))],
         textures: vec![tex],
         model: vec![
-            vec![EMPTY, EMPTY, EMPTY], 
-            vec![EMPTY, EMPTY, EMPTY], 
-            vec![EMPTY, EMPTY, EMPTY]
-        ]
+            vec![EMPTY, EMPTY, EMPTY],
+            vec![EMPTY, EMPTY, EMPTY],
+            vec![EMPTY, EMPTY, EMPTY],
+        ],
+        mouse_down: false,
     };
-
 
     // How many frames have we simulated?
     let mut frame_count: usize = 0;
@@ -240,12 +243,10 @@ fn main() {
     // Track end of the last frame
     let mut since = Instant::now();
     /*let mut model: Vec<Vec<usize>> = vec![
-                        vec![EMPTY, EMPTY, EMPTY], 
-                        vec![EMPTY, EMPTY, EMPTY], 
-                        vec![EMPTY, EMPTY, EMPTY]
-                    ];*/
-  
-
+        vec![EMPTY, EMPTY, EMPTY],
+        vec![EMPTY, EMPTY, EMPTY],
+        vec![EMPTY, EMPTY, EMPTY]
+    ];*/
 
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
@@ -277,43 +278,40 @@ fn main() {
                     //collision::cross(pixels.get_frame(), 300, 350, 50, WALL_COL);
 
                     //TODO: for loop that goes through model and draws all the circles and crosses
-                    for i in 0..3{
-                        for j in 0..3{
-                            if state.model[i][j] == CIRCLE{
-                                let center_x = (i * WIDTH/3 + WIDTH/6) as f32;
-                                let center_y = (j * HEIGHT/3 + HEIGHT/6) as f32;
+                    for i in 0..3 {
+                        for j in 0..3 {
+                            if state.model[i][j] == CIRCLE {
+                                let center_x = (i * WIDTH / 3 + WIDTH / 6) as f32;
+                                let center_y = (j * HEIGHT / 3 + HEIGHT / 6) as f32;
 
                                 collision::circle(pixels.get_frame(), center_x, center_y);
-                            }
-                            else if state.model[i][j] == CROSS{
-                                let cross_x = (i * WIDTH/3 + 75);
-                                let cross_y = (j * HEIGHT/3 + 50);
+                            } else if state.model[i][j] == CROSS {
+                                let cross_x = (i * WIDTH / 3 + 75);
+                                let cross_y = (j * HEIGHT / 3 + 50);
 
-                                collision::cross(pixels.get_frame(), cross_x , cross_y , CROSS_SIZE, WALL_COL);
-
+                                collision::cross(
+                                    pixels.get_frame(),
+                                    cross_x,
+                                    cross_y,
+                                    CROSS_SIZE,
+                                    WALL_COL,
+                                );
                             }
                         }
                     }
-                    
- 
+
                     window.request_redraw();
-                    /* 
+                    /*
                     if circle_x > 0.0 && circle_y > 0.0{
                         collision::draw(pixels.get_frame(), circle_x, circle_y);
                         window.request_redraw();
 
                     }*/
 
-
-
-
-
-
-                    let mut screen = Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
+                    let mut screen =
+                        Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
                 }
-                Mode::EndGame => {
-                    
-                }
+                Mode::EndGame => {}
             }
 
             // Flip buffers
@@ -338,10 +336,9 @@ fn main() {
                 pixels.resize(size.width, size.height);
             }
         }
-        
+
         // And the simulation "consumes" it
         while available_time >= DT {
-            let mut screen = Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
             // Eat up one frame worth of time
             available_time -= DT;
 
@@ -358,10 +355,17 @@ fn main() {
     });
 }
 
-fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pixels: &Pixels<Window>) {
+fn update_game(
+    state: &mut GameState,
+    input: &WinitInputHelper,
+    frame: usize,
+    pixels: &Pixels<Window>,
+) {
     let mut level_index: usize = state.current_level;
     let mut input_x = 0.0;
     let mut input_y = 0.0;
+    let mouse_held = input.mouse_held(0);
+    let mouse_rel = state.mouse_down && !mouse_held;
     
 
     match state.mode {
@@ -371,7 +375,40 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pi
             }
         }
         Mode::GamePlay => {
+            
+
+
             // Player control goes here
+            if mouse_rel{
+                if let Some((mouse_x, mouse_y)) = input.mouse().and_then(|mp| pixels.window_pos_to_pixel(mp).ok()) {
+                        input_x = (mouse_x / (WIDTH/3)) as f32;
+                        //println!("{}", circle_x);
+                        input_y = (mouse_y/ (HEIGHT/3)) as f32;
+                        //println!("{}", circle_y);
+                        if state.player == CIRCLE{
+                            if state.model[input_x as usize][input_y as usize] == EMPTY{
+                                state.model[input_x as usize][input_y as usize] = state.player;
+                                state.player = CROSS;
+                            }
+                            
+                        }
+                        
+                }
+            }
+            if state.player == CROSS{
+                let mut number1: usize = thread_rng().gen_range(0, 3);
+                let mut number2: usize = thread_rng().gen_range(0, 3);
+                if state.model[number1][number2] == EMPTY{
+                    state.model[number1][number2] = state.player;
+                    state.player = CIRCLE;
+                    
+                }
+                println!("{}, {}", number1, number2);
+
+            }
+
+            //multiplayer(taking turns)
+            /*
             if input.mouse_released(0) == true{
                 if let Some((mouse_x, mouse_y)) = input.mouse().and_then(|mp| pixels.window_pos_to_pixel(mp).ok()) {
                         input_x = (mouse_x / (WIDTH/3)) as f32;
@@ -391,127 +428,137 @@ fn update_game(state: &mut GameState, input: &WinitInputHelper, frame: usize, pi
                 }
 
             }
-            
+            */
 
-        
-            //Endgame logic
-            if gameOverCircle(state) || gameOverCross(state) {
+            
+            if gameOverCircle(state) || gameOverCross(state) || tie(state){
                 state.mode = Mode::EndGame;
             }
+            
         }
 
         Mode::EndGame => {
-            println!("Congratulations, you won. To play again, press return");
             if input.key_held(VirtualKeyCode::Return) {
                 ResetGame(state);
                 state.mode = Mode::GamePlay;
             }
         }
+
+        
     }
 
-    
+    state.mouse_down = mouse_held;
 
     // Handle collisions: Apply restitution impulses.
 
     // Update game rules: What happens when the player touches things?
 }
 
-pub fn gameOverCircle(state: &mut GameState) -> bool{
+pub fn gameOverCircle(state: &mut GameState) -> bool {
     //circle
-    if (state.model[0][0] == CIRCLE
-        && state.model[0][1] == CIRCLE
-        && state.model[0][2] == CIRCLE
-    ) {
+    if (state.model[0][0] == CIRCLE && state.model[0][1] == CIRCLE && state.model[0][2] == CIRCLE) {
         return true;
     } else if (state.model[1][0] == CIRCLE
         && state.model[1][1] == CIRCLE
-        && state.model[1][2] == CIRCLE
-    ) {
+        && state.model[1][2] == CIRCLE)
+    {
         return true;
     } else if (state.model[2][0] == CIRCLE
         && state.model[2][1] == CIRCLE
-        && state.model[2][2] == CIRCLE
-    ) {
+        && state.model[2][2] == CIRCLE)
+    {
         return true;
     } else if (state.model[0][0] == CIRCLE
         && state.model[1][0] == CIRCLE
-        && state.model[2][0] == CIRCLE
-    ) {
+        && state.model[2][0] == CIRCLE)
+    {
         return true;
     } else if (state.model[0][1] == CIRCLE
         && state.model[1][1] == CIRCLE
-        && state.model[2][1] == CIRCLE
-    ) {
+        && state.model[2][1] == CIRCLE)
+    {
         return true;
     } else if (state.model[0][2] == CIRCLE
         && state.model[1][2] == CIRCLE
-        && state.model[2][2] == CIRCLE
-    ) {
+        && state.model[2][2] == CIRCLE)
+    {
         return true;
     } else if (state.model[0][0] == CIRCLE
         && state.model[1][1] == CIRCLE
-        && state.model[2][2] == CIRCLE
-    ) {
+        && state.model[2][2] == CIRCLE)
+    {
         return true;
     } else if (state.model[0][2] == CIRCLE
         && state.model[1][1] == CIRCLE
-        && state.model[2][0] == CIRCLE
-    ) {
+        && state.model[2][0] == CIRCLE)
+    {
         return true;
     }
     return false;
-
 }
-pub fn gameOverCross(state: &mut GameState) -> bool{
+pub fn gameOverCross(state: &mut GameState) -> bool {
     //circle
-    if (state.model[0][0] == CROSS
-        && state.model[0][1] == CROSS
-        && state.model[0][2] == CROSS
-    ) {
+    if (state.model[0][0] == CROSS && state.model[0][1] == CROSS && state.model[0][2] == CROSS) {
         return true;
     } else if (state.model[1][0] == CROSS
         && state.model[1][1] == CROSS
-        && state.model[1][2] == CROSS
-    ) {
+        && state.model[1][2] == CROSS)
+    {
         return true;
     } else if (state.model[2][0] == CROSS
         && state.model[2][1] == CROSS
-        && state.model[2][2] == CROSS
-    ) {
+        && state.model[2][2] == CROSS)
+    {
         return true;
     } else if (state.model[0][0] == CROSS
         && state.model[1][0] == CROSS
-        && state.model[2][0] == CROSS
-    ) {
+        && state.model[2][0] == CROSS)
+    {
         return true;
     } else if (state.model[0][1] == CROSS
         && state.model[1][1] == CROSS
-        && state.model[2][1] == CROSS
-    ) {
+        && state.model[2][1] == CROSS)
+    {
         return true;
     } else if (state.model[0][2] == CROSS
         && state.model[1][2] == CROSS
-        && state.model[2][2] == CROSS
-    ) {
+        && state.model[2][2] == CROSS)
+    {
         return true;
     } else if (state.model[0][0] == CROSS
         && state.model[1][1] == CROSS
-        && state.model[2][2] == CROSS
-    ) {
+        && state.model[2][2] == CROSS)
+    {
         return true;
     } else if (state.model[0][2] == CROSS
         && state.model[1][1] == CROSS
-        && state.model[2][0] == CROSS
-    ) {
+        && state.model[2][0] == CROSS)
+    {
         return true;
     }
     return false;
+}
+pub fn tie(state: &mut GameState) -> bool {
+    let mut count = 0;
+    for i in 0..3 {
+        for j in 0..3 {
+            if (state.model[i][j] != EMPTY){
+                count = count + 1;
+            }
+        }
+    }
 
+    if (count == 9){
+        return true;
+    }
+    return false;
+    
+    
 }
 
-pub fn ResetGame(state: &mut GameState){
-    for i in 0..3{
-        for j in 0..3{
+pub fn ResetGame(state: &mut GameState) {
+    for i in 0..3 {
+        for j in 0..3 {
             state.model[i][j] = EMPTY;
         }
     }
