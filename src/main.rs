@@ -2,9 +2,11 @@ use crate::types::{Rect, Rgba, Vec2i};
 use pixels::{Pixels, SurfaceTexture};
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
-use std::rc::Rc;
+use std::{fs::{self, File}, path::Path, rc::Rc};
+use std::io::BufReader;
+use std::io::prelude::*;
 use std::time::Instant;
-use std::{borrow::Borrow, os::macos::raw::stat, path::Path, task::RawWakerVTable};
+use std::{borrow::Borrow, os::macos::raw::stat, task::RawWakerVTable};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 use winit::{dpi::LogicalSize, event};
@@ -12,6 +14,7 @@ use winit::{
     event::{Event, VirtualKeyCode},
     window::Window,
 };
+use serde::{Serialize, Deserialize};
 use winit_input_helper::WinitInputHelper; // 0.7.2
 
 // Whoa what's this?
@@ -40,7 +43,6 @@ use sprite::*;
 // And we'll put our general purpose types like color and geometry here:
 mod types;
 use types::*;
-
 mod collision;
 use collision::{rect_touching, Mobile, Wall};
 type Color = [u8; DEPTH];
@@ -382,11 +384,16 @@ fn update_game(
     match state.mode {
         Mode::TitleScreen => {
             if input.key_held(VirtualKeyCode::Return) {
-                state.mode = Mode::GamePlay
+                state.mode = Mode::GamePlay;
+            } else if input.key_held(VirtualKeyCode::L){
+                loadGame(state);
+                state.mode = Mode::GamePlay;
             }
         }
         Mode::GamePlay => {
-            
+            if input.key_held(VirtualKeyCode::S){
+                saveGame(state);
+            }
 
 
             // Player control goes here
@@ -458,7 +465,6 @@ fn update_game(
                 state.mode = Mode::GamePlay;
             }
         }
-
         
     }
 
@@ -468,7 +474,30 @@ fn update_game(
 
     // Update game rules: What happens when the player touches things?
 }
+pub fn saveGame(state: &mut GameState) -> std::io::Result<()>{
+    let serialized = serde_json::to_string(&state.model).unwrap();
+    fs::write("saved.txt", serialized);
 
+    let file = File::open("saved.txt")?;
+    let mut buf_reader = BufReader::new(file);
+    let mut contents = String::new();
+    buf_reader.read_to_string(&mut contents)?;
+    println!("{}", contents);
+    Ok(())
+}
+pub fn loadGame(state: &mut GameState) -> std::io::Result<()>{
+    if Path::new("saved.txt").exists(){
+        let file = File::open("saved.txt")?;
+        let mut buf_reader = BufReader::new(file);
+        let mut contents = String::new();
+        buf_reader.read_to_string(&mut contents)?;
+        let deserialized: Vec<Vec<usize>> = serde_json::from_str(&contents).unwrap();
+        state.model = deserialized;
+    }
+    //include a message that there was not saved gamestate
+    Ok(())
+    
+}
 pub fn gameOverCircle(state: &mut GameState) -> bool {
     //circle
     if (state.model[0][0] == CIRCLE && state.model[0][1] == CIRCLE && state.model[0][2] == CIRCLE) {
