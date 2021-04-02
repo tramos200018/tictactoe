@@ -100,20 +100,25 @@ enum Mode {
 fn main() {
     let mut rsrc = Resources::new();
     let startscreen_tex = rsrc.load_texture(Path::new("start.png"));
-    let endscreen_tex = rsrc.load_texture(Path::new("end.jpg"));
+    let endscreen_tex = rsrc.load_texture(Path::new("end.png"));
+    let confetti = rsrc.load_texture(Path::new("confetti2.jpeg"));
+    let confetti2 = rsrc.load_texture(Path::new("confetti1.jpeg"));
+    
+    
+    
 
     let tex = Rc::new(Texture::with_file(Path::new("king.png")));
     let frame1 = Rect {
         x: 0,
         y: 16,
-        w: 16,
-        h: 16,
+        w: 50,
+        h: 50,
     };
     let frame2 = Rect {
         x: 16,
         y: 16,
-        w: 16,
-        h: 16,
+        w: 50,
+        h: 50,
     };
     let mut anim = Rc::new(Animation::new(vec![frame1, frame2]));
 
@@ -224,8 +229,8 @@ fn main() {
         current_level: 0,
         mode: Mode::TitleScreen,
         animations: vec![],
-        sprites: vec![Sprite::new(&tex, &anim, frame1, 0, Vec2i(170, 500))],
-        textures: vec![tex],
+        sprites: vec![Sprite::new(&confetti, &anim, frame1, 0, Vec2i(0, 0)),Sprite::new(&confetti2, &anim, frame1, 0, Vec2i(0, 500))],
+        textures: vec![confetti, confetti2],
         model: vec![
             vec![EMPTY, EMPTY, EMPTY],
             vec![EMPTY, EMPTY, EMPTY],
@@ -251,9 +256,9 @@ fn main() {
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {
-            //let fb = pixels.get_frame();
+            let fb = pixels.get_frame();
 
-            collision::clear(pixels.get_frame(), CLEAR_COL);
+            collision::clear(fb, CLEAR_COL);
 
             match state.mode {
                 Mode::TitleScreen => {
@@ -311,7 +316,14 @@ fn main() {
                     let mut screen =
                         Screen::wrap(pixels.get_frame(), WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
                 }
-                Mode::EndGame => {}
+                Mode::EndGame => {
+
+                    let mut screen = Screen::wrap(fb, WIDTH, HEIGHT, DEPTH, Vec2i(0, 0));
+
+                    for s in state.sprites.iter() {
+                        screen.draw_sprite(s);
+                    }
+                }
             }
 
             // Flip buffers
@@ -438,6 +450,10 @@ fn update_game(
         }
 
         Mode::EndGame => {
+            state.sprites[0].position.1 += 1;
+            state.sprites[0].position.0 += 1;
+            state.sprites[1].position.1 -= 1;
+            state.sprites[1].position.0 += 1;
             if input.key_held(VirtualKeyCode::Return) {
                 ResetGame(state);
                 state.mode = Mode::GamePlay;
